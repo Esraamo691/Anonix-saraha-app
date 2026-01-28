@@ -1,0 +1,60 @@
+@import url("https://fonts.googleapis.com/css2?family=Lilita+One&family=Playwrite+PL:wght@100..400&display=swap");
+@import "tailwindcss";
+@plugin "./hero.js";
+@source "../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
+@custom-variant dark (&:is(.dark *));
+
+/* ===== Base ===== */
+@layer base {
+  h1,
+  .footer {
+    font-family: "Playwrite PL", cursive;
+  }
+
+  h1 {
+    @apply text-3xl font-bold;
+  }
+  h2 {
+    @apply text-2xl;
+  }
+  h3 {
+    @apply text-xl;
+  }
+}
+
+/* ===== Utilities ===== */
+@layer utilities {
+  .container {
+    @apply mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .logo-gradient {
+    background: linear-gradient(135deg, #cfccf5, #3737d4, #b4b2eb);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* ===== Button ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-transform: capitalize;
+  background-size: 200%;
+  background-image: linear-gradient(
+    to right,
+    #3c43ff 0%,
+    #171454 51%,
+    #3c43ff 100%
+  );
+  gap: 10px;
+  transition: 0.4s;
+}
+
+.btn:hover {
+  background-position: -100% center;
+  color: white;
+}
