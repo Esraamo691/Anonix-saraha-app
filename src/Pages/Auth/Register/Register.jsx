@@ -52,19 +52,49 @@ export default function Register() {
     formState: { errors, isSubmitting, isValid },
   } = useForm({ defaultValues, resolver: zodResolver(schema) });
 
+  // async function onSubmit(data) {
+  //   console.log("Submitting data:", data);
+  //   try {
+  //     const response = await axios.post(
+  //       "http://sarahne.eu-4.evennode.com/auth/register",
+  //       data,
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           accept: "*/*",
+  //         },
+  //       },
+  //     );
+
+  //     console.log("API Response:", response.data);
+
+  //     if (
+  //       response.data.message ===
+  //       "User Created Successfully, Please Check Your Email"
+  //     ) {
+  //       navigate("/login");
+  //       setApiError(null);
+  //     } else if (response.error) {
+  //       throw new Error(response.error);
+  //     }
+  //   } catch (error) {
+  //     console.error(
+  //       "Registration error:",
+  //       error.response?.data || error.message,
+  //     );
+  //     setApiError(error.response.data.error);
+  //   }
+  // }
   async function onSubmit(data) {
     console.log("Submitting data:", data);
     try {
-      const response = await axios.post(
-        "http://sarahne.eu-4.evennode.com/auth/register",
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            accept: "*/*",
-          },
+      // بدل رابط السيرفر المباشر، نرسل للـ proxy
+      const response = await axios.post("/api/proxy-register", data, {
+        headers: {
+          "Content-Type": "application/json",
+          accept: "*/*",
         },
-      );
+      });
 
       console.log("API Response:", response.data);
 
@@ -74,15 +104,15 @@ export default function Register() {
       ) {
         navigate("/login");
         setApiError(null);
-      } else if (response.error) {
-        throw new Error(response.error);
+      } else if (response.data.error) {
+        throw new Error(response.data.error);
       }
     } catch (error) {
       console.error(
         "Registration error:",
         error.response?.data || error.message,
       );
-      setApiError(error.response.data.error);
+      setApiError(error.response?.data?.error || error.message);
     }
   }
 
