@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ValidationError from "../../../Components/Shared/ValidationError/ValidationError";
-import GoogleSignUp from "../GoogleSignUp/GoogleSignUp";
+// import GoogleSignUp from "../GoogleSignUp/GoogleSignUp";
 const defaultValues = {
   firstName: "",
   lastName: "",
@@ -220,15 +220,18 @@ export default function Register() {
             />
             <ValidationError error={errors.phone?.message} />
           </div>
-
-          <Button
-            type="submit"
-            className="mt-4 bg-blue-600/80 hover:bg-blue-600 text-white"
-          >
-            Join Anonix
-          </Button>
+          <div className="flex items-end justify-between w-full ">
+            <Button
+              type="submit"
+              className="mt-4 bg-blue-600/80 hover:bg-blue-600 text-white"
+            >
+              Join Anonix
+            </Button>
+            {/* <p className="bg-blue-50 text-sky-600 p-1 rounded-full">OR</p> */}
+            {/* <GoogleSignUp /> */}
+          </div>
         </Form>
-        <GoogleSignUp />
+
         <p className="mt-4 text-center text-xs text-gray-500">
           By creating an account, you can receive anonymous messages, manage
           users, and interact with comments freely.

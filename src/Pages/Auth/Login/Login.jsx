@@ -7,6 +7,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ValidationError from "../../../Components/Shared/ValidationError/ValidationError";
 import { AuthContext } from "../../../Context/AuthContext";
+// import GoogleSignIn from "../GoogleSignIn/GoogleSignIn";
 
 // Login Schema
 const loginSchema = z.object({
@@ -181,12 +182,16 @@ export default function LoginWithOTP() {
               <ValidationError error={loginErrors.password?.message} />
             </div>
 
-            <Button
-              type="submit"
-              className="mt-4 bg-blue-600/80 hover:bg-blue-600 text-white"
-            >
-              Login
-            </Button>
+            <div className="flex items-end justify-between w-full">
+              <Button
+                type="submit"
+                className="mt-4 bg-blue-600/80 hover:bg-blue-600 text-white"
+              >
+                Login
+              </Button>
+              {/* <p className="bg-blue-50 text-sky-600 p-2 rounded-full">OR</p> */}
+              {/* <GoogleSignIn setApiError={setApiError} /> */}
+            </div>
           </Form>
         )}
 

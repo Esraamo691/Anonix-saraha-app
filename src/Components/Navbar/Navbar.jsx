@@ -124,30 +124,30 @@ export default function App() {
       </NavbarContent>
 
       <NavbarContent className="sm:hidden" justify="end">
-        {token && <NavbarMenuToggle />}
+        <NavbarMenuToggle />
       </NavbarContent>
-      {token && (
-        <NavbarMenu>
-          {menuItems.map((item, index) => (
-            <NavbarMenuItem key={`${item}-${index}`}>
-              <NavbarLink
-                className="w-full"
-                color={
-                  index === 2
-                    ? "warning"
-                    : index === menuItems.length - 1
-                      ? "danger"
-                      : "foreground"
-                }
-                to={"/"}
-                size="lg"
-              >
-                {item}
-              </NavbarLink>
-            </NavbarMenuItem>
-          ))}
-        </NavbarMenu>
-      )}
+
+      <NavbarMenu>
+        {menuItems.map((item, index) => (
+          <NavbarMenuItem key={`${item}-${index}`}>
+            <NavLink
+              className="w-full"
+              color={index === 2 ? "warning" : "foreground"}
+              to={
+                item === "Dashboard"
+                  ? "/dashboard"
+                  : item === "Profile"
+                    ? "/profile"
+                    : "/login" // Log Out أو غيره
+              }
+              size="lg"
+              onClick={item === "Log Out" ? handleLogout : undefined}
+            >
+              {item}
+            </NavLink>
+          </NavbarMenuItem>
+        ))}
+      </NavbarMenu>
     </Navbar>
   );
 }
