@@ -59,3 +59,51 @@ export default function GoogleSignUp({ setApiError }) {
     </div>
   );
 }
+// import { GoogleLogin } from "@react-oauth/google";
+// import { useNavigate } from "react-router-dom";
+// import { api } from "../../../lib/api";
+
+// export default function GoogleSignUp({ setApiError }) {
+//   const navigate = useNavigate();
+
+//   const handleSuccess = async (credentialResponse) => {
+//     const idToken = credentialResponse.credential;
+
+//     try {
+//       const res = await api.post("/auth/google-signup", {
+//         idToken,
+//       });
+
+//       if (res.data?.token || res.data?.message === "success") {
+//         localStorage.setItem("token", res.data.token);
+//         navigate("/dashboard");
+//       }
+//     } catch (err) {
+//       const backendError = err.response?.data?.error;
+
+//       if (backendError === "User Already Exist") {
+//         setApiError(
+//           "This Google account already exists. Please login instead.",
+//         );
+//       } else {
+//         setApiError("Google signup failed. Please try again.");
+//       }
+//     }
+//   };
+
+//   const handleError = () => {
+//     setApiError("Google authentication failed.");
+//   };
+
+//   return (
+//     <div className="mt-6 flex justify-center">
+//       <GoogleLogin
+//         onSuccess={handleSuccess}
+//         onError={handleError}
+//         theme="filled_blue"
+//         size="large"
+//         text="continue_with"
+//       />
+//     </div>
+//   );
+// }

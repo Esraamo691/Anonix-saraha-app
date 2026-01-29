@@ -7,8 +7,9 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ValidationError from "../../../Components/Shared/ValidationError/ValidationError";
 import { AuthContext } from "../../../Context/AuthContext";
+import AppButton from "../../../Components/Shared/AppButton/AppButton";
 // import GoogleSignIn from "../GoogleSignIn/GoogleSignIn";
-
+import { login, verifyOTP } from "../../../services/auth.service";
 // Login Schema
 const loginSchema = z.object({
   email: z.string().email("Invalid Email Address"),
@@ -29,17 +30,20 @@ const otpSchema = z.object({
   otp: z.string().length(6, { message: "OTP must be 6 digits" }),
 });
 
-export default function LoginWithOTP() {
+export default function Login() {
+  const [loginPayload, setLoginPayload] = useState(null);
+
   const navigate = useNavigate();
   const [ApiError, setApiError] = useState(null);
   const [showOTP, setShowOTP] = useState(false);
   const [emailForOTP, setEmailForOTP] = useState("");
   const { token, setToken } = useContext(AuthContext);
+
   // Login Form
   const {
     register: loginRegister,
     handleSubmit: handleLoginSubmit,
-    formState: { errors: loginErrors },
+    formState: { errors: loginErrors, isSubmitting, isValid },
   } = useForm({ resolver: zodResolver(loginSchema) });
 
   // OTP Form
@@ -60,9 +64,9 @@ export default function LoginWithOTP() {
 
       console.log("Login Response:", response);
 
-      if (response.data?.accessToken) {
-        localStorage.setItem("token", response.data.accessToken);
-        setToken(response.data.accessToken);
+      if (response?.accessToken) {
+        localStorage.setItem("token", response.accessToken);
+        setToken(response.accessToken);
         setApiError(null);
         navigate("/dashboard");
       } else {
@@ -71,44 +75,78 @@ export default function LoginWithOTP() {
     } catch (error) {
       const errMsg = error.response?.data?.error;
 
+      // if (errMsg === "User Not Confirm Please Verify Your Account") {
+      //   setShowOTP(true);
+      //   setEmailForOTP(data.email);
+      //   setApiError(
+      //     "Your account is not verified. Enter OTP sent to your email.",
+      //   );
+      // } else {
+      //   setApiError(errMsg || "Something went wrong");
+      // }
       if (errMsg === "User Not Confirm Please Verify Your Account") {
         setShowOTP(true);
         setEmailForOTP(data.email);
+
+        // ✅ نخزن الايميل والباسورد
+        setLoginPayload(data);
+
         setApiError(
           "Your account is not verified. Enter OTP sent to your email.",
         );
-      } else {
-        setApiError(errMsg || "Something went wrong");
       }
     }
   };
 
-  // OTP Handler
-  const onOTPSubmit = async (data) => {
+  //OTP Handler
+  // const onOTPSubmit = async (data) => {
+  //   try {
+  //     setApiError(null);
+  //     const response = await axios.post(
+  //       "http://sarahne.eu-4.evennode.com/auth/verify-account",
+  //       {
+  //         email: emailForOTP,
+  //         otp: data.otp,
+  //       },
+  //     );
+
+  //     console.log("OTP Response:", response.data);
+
+  //     if (response.data.message === "Account verified successfully") {
+  //       // OTP verified, login automatically
+  //       const { data: loginResponse } = await axios.post(
+  //         "http://sarahne.eu-4.evennode.com/auth/login",
+  //         {
+  //           email: emailForOTP,
+  //           password: document.getElementById("passwordInput").value,
+  //         },
+  //       );
+
+  //       navigate("/dashboard");
+  //     }
+  //   } catch (error) {
+  //     setApiError(error.response?.data?.error || "OTP verification failed");
+  //   }
+  // };
+  const onOTPSubmit = async ({ otp }) => {
     try {
       setApiError(null);
-      const response = await axios.post(
-        "http://sarahne.eu-4.evennode.com/auth/verify-account",
-        {
-          email: emailForOTP,
-          otp: data.otp,
-        },
+
+      // 1️⃣ verify OTP
+      await axios.post("http://sarahne.eu-4.evennode.com/auth/verify-account", {
+        email: emailForOTP,
+        otp,
+      });
+
+      // 2️⃣ login بنفس الداتا القديمة
+      const { data: loginRes } = await axios.post(
+        "http://sarahne.eu-4.evennode.com/auth/login",
+        loginPayload,
       );
 
-      console.log("OTP Response:", response.data);
-
-      if (response.data.message === "Account verified successfully") {
-        // OTP verified, login automatically
-        const { data: loginResponse } = await axios.post(
-          "http://sarahne.eu-4.evennode.com/auth/login",
-          {
-            email: emailForOTP,
-            password: document.getElementById("passwordInput").value,
-          },
-        );
-
-        navigate("/dashboard");
-      }
+      localStorage.setItem("token", loginRes.accessToken);
+      setToken(loginRes.accessToken);
+      navigate("/dashboard");
     } catch (error) {
       setApiError(error.response?.data?.error || "OTP verification failed");
     }
@@ -174,7 +212,6 @@ export default function LoginWithOTP() {
                 placeholder="Enter your password"
                 type="password"
                 variant="faded"
-                id="passwordInput"
                 classNames={{
                   inputWrapper: "bg-white/5 border border-white/10 text-white",
                 }}
@@ -183,12 +220,13 @@ export default function LoginWithOTP() {
             </div>
 
             <div className="flex items-end justify-between w-full">
-              <Button
+              <AppButton
                 type="submit"
-                className="mt-4 bg-blue-600/80 hover:bg-blue-600 text-white"
+                disabled={!isValid}
+                isLoading={isSubmitting}
               >
                 Login
-              </Button>
+              </AppButton>
               {/* <p className="bg-blue-50 text-sky-600 p-2 rounded-full">OR</p> */}
               {/* <GoogleSignIn setApiError={setApiError} /> */}
             </div>

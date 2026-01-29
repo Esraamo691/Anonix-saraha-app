@@ -17,7 +17,6 @@ import { useContext } from "react";
 import { AuthContext } from "../../Context/AuthContext";
 
 export default function App() {
-  const menuItems = ["Dashboard", "Profile", "Log Out"];
   const { token, setToken } = useContext(AuthContext);
   const navigate = useNavigate();
   function handleLogout() {
@@ -128,25 +127,80 @@ export default function App() {
       </NavbarContent>
 
       <NavbarMenu>
-        {menuItems.map((item, index) => (
-          <NavbarMenuItem key={`${item}-${index}`}>
-            <NavLink
-              className="w-full"
-              color={index === 2 ? "warning" : "foreground"}
-              to={
-                item === "Dashboard"
-                  ? "/dashboard"
-                  : item === "Profile"
-                    ? "/profile"
-                    : "/login" // Log Out أو غيره
-              }
-              size="lg"
-              onClick={item === "Log Out" ? handleLogout : undefined}
-            >
-              {item}
-            </NavLink>
-          </NavbarMenuItem>
-        ))}
+        {token ? (
+          <>
+            <NavbarMenuItem>
+              <NavLink
+                color="foreground"
+                className={({ isActive }) =>
+                  isActive
+                    ? `text-white btn px-3 py-2 rounded-2xl flex items-center gap-2 w-full`
+                    : `text-gray-400 flex items-center gap-2 w-full`
+                }
+                to={"/dashboard"}
+              >
+                <FaUser /> Dashboard
+              </NavLink>
+            </NavbarMenuItem>
+
+            <NavbarMenuItem>
+              <NavLink
+                aria-current="page"
+                color="warning"
+                to={"/profile"}
+                className={({ isActive }) =>
+                  isActive
+                    ? `text-white btn px-3 py-2 rounded-2xl flex items-center gap-2 w-full`
+                    : `text-gray-400 flex items-center gap-2 w-full`
+                }
+              >
+                <FaUser /> Profile
+              </NavLink>
+            </NavbarMenuItem>
+            <NavbarMenuItem>
+              <Button
+                color="primary"
+                className="text-medium text-white  "
+                startContent={<LuLogOut />}
+                variant="ghost"
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            </NavbarMenuItem>
+          </>
+        ) : (
+          <>
+            <NavbarMenuItem>
+              <NavLink
+                aria-current="page"
+                color="warning"
+                to={"/login"}
+                className={({ isActive }) =>
+                  isActive
+                    ? `text-white btn px-4 py-2 rounded-2xl flex items-center gap-2  w-full `
+                    : `text-gray-400 flex items-center gap-2  w-full `
+                }
+              >
+                <LuLogIn /> Login
+              </NavLink>
+            </NavbarMenuItem>
+            <NavbarMenuItem>
+              <NavLink
+                aria-current="page"
+                color="warning"
+                to={"/register"}
+                className={({ isActive }) =>
+                  isActive
+                    ? `text-white btn px-4 py-2 rounded-2xl flex items-center gap-2 w-full `
+                    : `text-gray-400 flex items-center gap-2 w-full`
+                }
+              >
+                Sign Up
+              </NavLink>
+            </NavbarMenuItem>
+          </>
+        )}
       </NavbarMenu>
     </Navbar>
   );
