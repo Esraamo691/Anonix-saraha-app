@@ -8,8 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import ValidationError from "../../../Components/Shared/ValidationError/ValidationError";
 import { AuthContext } from "../../../Context/AuthContext";
 import AppButton from "../../../Components/Shared/AppButton/AppButton";
-// import GoogleSignIn from "../GoogleSignIn/GoogleSignIn";
 import { API_BASE_URL } from "../../../services/api";
+
 // Login Schema
 const loginSchema = z.object({
   email: z.string().email("Invalid Email Address"),
@@ -32,7 +32,6 @@ const otpSchema = z.object({
 
 export default function Login() {
   const [loginPayload, setLoginPayload] = useState(null);
-
   const navigate = useNavigate();
   const [ApiError, setApiError] = useState(null);
   const [showOTP, setShowOTP] = useState(false);
@@ -56,14 +55,14 @@ export default function Login() {
   // Login Handler
   const onLogin = async (data) => {
     try {
-      // const { data: response } = await axios.post("/api/auth/login", data);
       const { data: response } = await axios.post(
-        `${API_BASE_URL}/auth/login`, // استخدم المتغير الجديد
+        `${API_BASE_URL}/auth/login`,
         data,
       );
+
       console.log("Login Response:", response);
 
-      const tokenFromServer = response?.data?.accessToken; // هنا ناخد التوكن الصحيح
+      const tokenFromServer = response?.data?.accessToken;
 
       if (tokenFromServer) {
         localStorage.setItem("token", tokenFromServer);
@@ -84,111 +83,39 @@ export default function Login() {
           "Your account is not verified. Enter OTP sent to your email.",
         );
       } else {
-        setApiError(errMsg || "Something went wrong");
+        setApiError(String(errMsg || "Something went wrong"));
       }
     }
   };
 
-  // const onLogin = async (data) => {
-  //   try {
-  //     const { data: response } = await axios.post(
-  //       "http://sarahne.eu-4.evennode.com/auth/login",
-  //       data,
-  //     );
-
-  //     console.log("Login Response:", response);
-
-  //     if (response?.accessToken) {
-  //       localStorage.setItem("token", response.accessToken);
-  //       setToken(response.accessToken);
-  //       setApiError(null);
-  //       navigate("/dashboard");
-  //     } else {
-  //       setApiError("Token not returned from server");
-  //     }
-  //   } catch (error) {
-  //     const errMsg = error.response?.data?.error;
-
-  //     // if (errMsg === "User Not Confirm Please Verify Your Account") {
-  //     //   setShowOTP(true);
-  //     //   setEmailForOTP(data.email);
-  //     //   setApiError(
-  //     //     "Your account is not verified. Enter OTP sent to your email.",
-  //     //   );
-  //     // } else {
-  //     //   setApiError(errMsg || "Something went wrong");
-  //     // }
-  //     if (errMsg === "User Not Confirm Please Verify Your Account") {
-  //       setShowOTP(true);
-  //       setEmailForOTP(data.email);
-
-  //       // ✅ نخزن الايميل والباسورد
-  //       setLoginPayload(data);
-
-  //       setApiError(
-  //         "Your account is not verified. Enter OTP sent to your email.",
-  //       );
-  //     }
-  //   }
-  // };
-
-  //OTP Handler
-  // const onOTPSubmit = async (data) => {
-  //   try {
-  //     setApiError(null);
-  //     const response = await axios.post(
-  //       "http://sarahne.eu-4.evennode.com/auth/verify-account",
-  //       {
-  //         email: emailForOTP,
-  //         otp: data.otp,
-  //       },
-  //     );
-
-  //     console.log("OTP Response:", response.data);
-
-  //     if (response.data.message === "Account verified successfully") {
-  //       // OTP verified, login automatically
-  //       const { data: loginResponse } = await axios.post(
-  //         "http://sarahne.eu-4.evennode.com/auth/login",
-  //         {
-  //           email: emailForOTP,
-  //           password: document.getElementById("passwordInput").value,
-  //         },
-  //       );
-
-  //       navigate("/dashboard");
-  //     }
-  //   } catch (error) {
-  //     setApiError(error.response?.data?.error || "OTP verification failed");
-  //   }
-  // };
+  // OTP Handler
   const onOTPSubmit = async ({ otp }) => {
     try {
       setApiError(null);
 
-      // await axios.post("http://sarahne.eu-4.evennode.com/auth/verify-account", {
-      //   email: emailForOTP,
-      //   otp,
-      // });
       await axios.post(`${API_BASE_URL}/auth/verify-account`, {
         email: emailForOTP,
         otp,
       });
 
-      // const { data: loginRes } = await axios.post(
-      //   "http://sarahne.eu-4.evennode.com/auth/login",
-      //   loginPayload,
-      // );
       const { data: loginRes } = await axios.post(
         `${API_BASE_URL}/auth/login`,
         loginPayload,
       );
 
-      localStorage.setItem("token", loginRes.accessToken);
-      setToken(loginRes.accessToken);
-      navigate("/dashboard");
+      const tokenFromServer = loginRes?.data?.accessToken;
+
+      if (tokenFromServer) {
+        localStorage.setItem("token", tokenFromServer);
+        setToken(tokenFromServer);
+        navigate("/dashboard");
+      } else {
+        setApiError("Token not returned from server");
+      }
     } catch (error) {
-      setApiError(error.response?.data?.error || "OTP verification failed");
+      setApiError(
+        String(error.response?.data?.error || "OTP verification failed"),
+      );
     }
   };
 
@@ -203,6 +130,7 @@ export default function Login() {
         className="pointer-events-none absolute bottom-1/4 right-1/4 h-80 w-80 rounded-full
          bg-[radial-gradient(circle,rgb(0,27,136)_0%,transparent_70%)] blur-3xl"
       />
+
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-xl">
         <h1 className="logo-gradient text-center">Welcome To Anonix</h1>
         <p className="mt-2 text-center text-sm text-gray-400">
@@ -210,20 +138,22 @@ export default function Login() {
             ? "Enter the OTP sent to your email to verify your account."
             : "Log in to read your anonymous messages."}
         </p>
+
         {ApiError && (
           <div className="flex mt-3 items-center justify-center w-full">
             <div className="flex flex-col w-full">
-              <div className="w-full flex items-center  my-3 ">
+              <div className="w-full flex items-center my-3">
                 <Alert
                   variant="faded"
                   color="danger"
                   className="py-2"
-                  title={ApiError}
+                  title={String(ApiError)}
                 />
               </div>
             </div>
           </div>
         )}
+
         {!showOTP && (
           <Form
             className="mt-6 flex flex-col gap-4"
@@ -267,8 +197,6 @@ export default function Login() {
               >
                 Login
               </AppButton>
-              {/* <p className="bg-blue-50 text-sky-600 p-2 rounded-full">OR</p> */}
-              {/* <GoogleSignIn setApiError={setApiError} /> */}
             </div>
           </Form>
         )}
