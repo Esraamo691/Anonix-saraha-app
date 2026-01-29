@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import ValidationError from "../../../Components/Shared/ValidationError/ValidationError";
 import AppButton from "../../../Components/Shared/AppButton/AppButton";
 import GoogleSignUp from "../GoogleSignUp/GoogleSignUp";
+import { API_BASE_URL } from "../../../services/api";
 const defaultValues = {
   firstName: "",
   lastName: "",
@@ -56,17 +57,22 @@ export default function Register() {
   async function onSubmit(data) {
     console.log("Submitting data:", data);
     try {
-      const response = await axios.post(
-        "http://sarahne.eu-4.evennode.com/auth/register",
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            accept: "*/*",
-          },
-        },
-      );
-
+      // const response = await axios.post(
+      //   "http://sarahne.eu-4.evennode.com/auth/register",
+      //   data,
+      //   {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       accept: "*/*",
+      //     },
+      //   },
+      // );
+      // const response = await axios.post("/api/auth/register", data, {
+      //   headers: { "Content-Type": "application/json", accept: "*/*" },
+      // });
+      const response = await axios.post(`${API_BASE_URL}/auth/register`, data, {
+        headers: { "Content-Type": "application/json", accept: "*/*" },
+      });
       console.log("API Response:", response.data);
 
       if (

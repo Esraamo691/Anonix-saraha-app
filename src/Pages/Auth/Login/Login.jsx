@@ -9,7 +9,7 @@ import ValidationError from "../../../Components/Shared/ValidationError/Validati
 import { AuthContext } from "../../../Context/AuthContext";
 import AppButton from "../../../Components/Shared/AppButton/AppButton";
 // import GoogleSignIn from "../GoogleSignIn/GoogleSignIn";
-import { login, verifyOTP } from "../../../services/auth.service";
+import { API_BASE_URL } from "../../../services/api";
 // Login Schema
 const loginSchema = z.object({
   email: z.string().email("Invalid Email Address"),
@@ -54,19 +54,20 @@ export default function Login() {
   } = useForm({ resolver: zodResolver(otpSchema) });
 
   // Login Handler
-
   const onLogin = async (data) => {
     try {
+      // const { data: response } = await axios.post("/api/auth/login", data);
       const { data: response } = await axios.post(
-        "http://sarahne.eu-4.evennode.com/auth/login",
+        `${API_BASE_URL}/auth/login`, // استخدم المتغير الجديد
         data,
       );
-
       console.log("Login Response:", response);
 
-      if (response?.accessToken) {
-        localStorage.setItem("token", response.accessToken);
-        setToken(response.accessToken);
+      const tokenFromServer = response?.data?.accessToken; // هنا ناخد التوكن الصحيح
+
+      if (tokenFromServer) {
+        localStorage.setItem("token", tokenFromServer);
+        setToken(tokenFromServer);
         setApiError(null);
         navigate("/dashboard");
       } else {
@@ -75,28 +76,61 @@ export default function Login() {
     } catch (error) {
       const errMsg = error.response?.data?.error;
 
-      // if (errMsg === "User Not Confirm Please Verify Your Account") {
-      //   setShowOTP(true);
-      //   setEmailForOTP(data.email);
-      //   setApiError(
-      //     "Your account is not verified. Enter OTP sent to your email.",
-      //   );
-      // } else {
-      //   setApiError(errMsg || "Something went wrong");
-      // }
       if (errMsg === "User Not Confirm Please Verify Your Account") {
         setShowOTP(true);
         setEmailForOTP(data.email);
-
-        // ✅ نخزن الايميل والباسورد
         setLoginPayload(data);
-
         setApiError(
           "Your account is not verified. Enter OTP sent to your email.",
         );
+      } else {
+        setApiError(errMsg || "Something went wrong");
       }
     }
   };
+
+  // const onLogin = async (data) => {
+  //   try {
+  //     const { data: response } = await axios.post(
+  //       "http://sarahne.eu-4.evennode.com/auth/login",
+  //       data,
+  //     );
+
+  //     console.log("Login Response:", response);
+
+  //     if (response?.accessToken) {
+  //       localStorage.setItem("token", response.accessToken);
+  //       setToken(response.accessToken);
+  //       setApiError(null);
+  //       navigate("/dashboard");
+  //     } else {
+  //       setApiError("Token not returned from server");
+  //     }
+  //   } catch (error) {
+  //     const errMsg = error.response?.data?.error;
+
+  //     // if (errMsg === "User Not Confirm Please Verify Your Account") {
+  //     //   setShowOTP(true);
+  //     //   setEmailForOTP(data.email);
+  //     //   setApiError(
+  //     //     "Your account is not verified. Enter OTP sent to your email.",
+  //     //   );
+  //     // } else {
+  //     //   setApiError(errMsg || "Something went wrong");
+  //     // }
+  //     if (errMsg === "User Not Confirm Please Verify Your Account") {
+  //       setShowOTP(true);
+  //       setEmailForOTP(data.email);
+
+  //       // ✅ نخزن الايميل والباسورد
+  //       setLoginPayload(data);
+
+  //       setApiError(
+  //         "Your account is not verified. Enter OTP sent to your email.",
+  //       );
+  //     }
+  //   }
+  // };
 
   //OTP Handler
   // const onOTPSubmit = async (data) => {
@@ -132,15 +166,21 @@ export default function Login() {
     try {
       setApiError(null);
 
-      // 1️⃣ verify OTP
-      await axios.post("http://sarahne.eu-4.evennode.com/auth/verify-account", {
+      // await axios.post("http://sarahne.eu-4.evennode.com/auth/verify-account", {
+      //   email: emailForOTP,
+      //   otp,
+      // });
+      await axios.post(`${API_BASE_URL}/auth/verify-account`, {
         email: emailForOTP,
         otp,
       });
 
-      // 2️⃣ login بنفس الداتا القديمة
+      // const { data: loginRes } = await axios.post(
+      //   "http://sarahne.eu-4.evennode.com/auth/login",
+      //   loginPayload,
+      // );
       const { data: loginRes } = await axios.post(
-        "http://sarahne.eu-4.evennode.com/auth/login",
+        `${API_BASE_URL}/auth/login`,
         loginPayload,
       );
 
