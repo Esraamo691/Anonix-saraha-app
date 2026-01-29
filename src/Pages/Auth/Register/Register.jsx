@@ -8,7 +8,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ValidationError from "../../../Components/Shared/ValidationError/ValidationError";
 import AppButton from "../../../Components/Shared/AppButton/AppButton";
-import GoogleSignUp from "../GoogleSignUp/GoogleSignUp";
+// import GoogleSignUp from "../GoogleSignUp/GoogleSignUp";
 import { API_BASE_URL } from "../../../services/api";
 const defaultValues = {
   firstName: "",
@@ -236,7 +236,7 @@ export default function Register() {
               Register
             </AppButton>
             <p className="bg-blue-50 text-sky-600 p-1 rounded-full">OR</p>
-            <GoogleSignUp />
+            {/* <GoogleSignUp /> */}
           </div>
         </Form>
 

@@ -19,7 +19,6 @@
 import axios from "axios";
 
 export default async function handler(req, res) {
-  // يبقي path كله بعد /api/
   const path = req.query.path.join("/");
   const url = `http://sarahne.eu-4.evennode.com/${path}`;
 
