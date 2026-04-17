@@ -1,16 +1,15 @@
-import { Alert, Button, Form, Input } from "@heroui/react";
-import React, { useContext, useState } from "react";
-import { useForm } from "react-hook-form";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import ValidationError from "../../../Components/Shared/ValidationError/ValidationError";
-import { AuthContext } from "../../../Context/AuthContext";
 import AppButton from "../../../Components/Shared/AppButton/AppButton";
-import { API_BASE_URL } from "../../../services/api";
-
-// Login Schema
+import { useNavigate } from "react-router-dom";
+import { useContext, useState } from "react";
+import { AuthContext } from "../../../Context/AuthContext";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { login } from "../../../services/AuthServices";
+import { Alert, Button, Form, Input } from "@heroui/react";
+import { Link } from "react-router-dom";
+import ValidationError from "../../../Components/Shared/ValidationError/ValidationError";
+import * as z from "zod";
+// // Login Schema
 const loginSchema = z.object({
   email: z.string().email("Invalid Email Address"),
   password: z
@@ -25,100 +24,59 @@ const loginSchema = z.object({
     ),
 });
 
-// OTP Schema
-const otpSchema = z.object({
-  otp: z.string().length(6, { message: "OTP must be 6 digits" }),
-});
-
 export default function Login() {
-  const [loginPayload, setLoginPayload] = useState(null);
   const navigate = useNavigate();
   const [ApiError, setApiError] = useState(null);
-  const [showOTP, setShowOTP] = useState(false);
-  const [emailForOTP, setEmailForOTP] = useState("");
-  const { token, setToken } = useContext(AuthContext);
-
+  const { setToken } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
   // Login Form
   const {
     register: loginRegister,
     handleSubmit: handleLoginSubmit,
     formState: { errors: loginErrors, isSubmitting, isValid },
   } = useForm({ resolver: zodResolver(loginSchema) });
-
-  // OTP Form
-  const {
-    register: otpRegister,
-    handleSubmit: handleOTPSubmit,
-    formState: { errors: otpErrors },
-  } = useForm({ resolver: zodResolver(otpSchema) });
-
-  // Login Handler
   const onLogin = async (data) => {
     try {
-      const { data: response } = await axios.post(
-        `${API_BASE_URL}/auth/login`,
-        data,
-      );
+      setLoading(true);
+      setApiError(null);
 
-      console.log("Login Response:", response);
+      const response = await login(data);
 
-      const tokenFromServer = response?.data?.accessToken;
+      const tokenFromServer = response?.result?.access_token;
 
       if (tokenFromServer) {
-        localStorage.setItem("token", tokenFromServer);
         setToken(tokenFromServer);
-        setApiError(null);
         navigate("/dashboard");
       } else {
         setApiError("Token not returned from server");
       }
     } catch (error) {
       const errMsg = error.response?.data?.error;
-
-      if (errMsg === "User Not Confirm Please Verify Your Account") {
-        setShowOTP(true);
-        setEmailForOTP(data.email);
-        setLoginPayload(data);
-        setApiError(
-          "Your account is not verified. Enter OTP sent to your email.",
-        );
-      } else {
-        setApiError(String(errMsg || "Something went wrong"));
-      }
+      setApiError(errMsg || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
+  // const onLogin = async (data) => {
+  //   try {
+  //     setApiError(null);
 
-  // OTP Handler
-  const onOTPSubmit = async ({ otp }) => {
-    try {
-      setApiError(null);
+  //     const response = await login(data);
 
-      await axios.post(`${API_BASE_URL}/auth/verify-account`, {
-        email: emailForOTP,
-        otp,
-      });
+  //     const tokenFromServer = response?.result?.access_token;
 
-      const { data: loginRes } = await axios.post(
-        `${API_BASE_URL}/auth/login`,
-        loginPayload,
-      );
+  //     if (tokenFromServer) {
+  //       setToken(tokenFromServer);
+  //       navigate("/dashboard");
+  //     } else {
+  //       setApiError("Token not returned from server");
+  //     }
+  //   } catch (error) {
+  //     const errMsg = error.response?.data?.error;
 
-      const tokenFromServer = loginRes?.data?.accessToken;
-
-      if (tokenFromServer) {
-        localStorage.setItem("token", tokenFromServer);
-        setToken(tokenFromServer);
-        navigate("/dashboard");
-      } else {
-        setApiError("Token not returned from server");
-      }
-    } catch (error) {
-      setApiError(
-        String(error.response?.data?.error || "OTP verification failed"),
-      );
-    }
-  };
-
+  //     setApiError(errMsg || "Something went wrong");
+  //   }
+  // };
   return (
     <section className="relative bg-[#070a10] min-h-screen flex justify-center items-center overflow-hidden">
       <div
@@ -134,9 +92,7 @@ export default function Login() {
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-xl">
         <h1 className="logo-gradient text-center">Welcome To Anonix</h1>
         <p className="mt-2 text-center text-sm text-gray-400">
-          {showOTP
-            ? "Enter the OTP sent to your email to verify your account."
-            : "Log in to read your anonymous messages."}
+          Log in to read your anonymous messages.
         </p>
 
         {ApiError && (
@@ -147,85 +103,64 @@ export default function Login() {
                   variant="faded"
                   color="danger"
                   className="py-2"
-                  title={String(ApiError)}
+                  title={ApiError}
                 />
               </div>
             </div>
           </div>
         )}
 
-        {!showOTP && (
-          <Form
-            className="mt-6 flex flex-col gap-4"
-            onSubmit={handleLoginSubmit(onLogin)}
-          >
-            <div className="w-full">
-              <Input
-                {...loginRegister("email")}
-                label="Email"
-                labelPlacement="outside"
-                placeholder="Enter your email"
-                type="email"
-                variant="faded"
-                classNames={{
-                  inputWrapper: "bg-white/5 border border-white/10 text-white",
-                }}
-              />
-              <ValidationError error={loginErrors.email?.message} />
-            </div>
-
-            <div className="w-full">
-              <Input
-                {...loginRegister("password")}
-                label="Password"
-                labelPlacement="outside"
-                placeholder="Enter your password"
-                type="password"
-                variant="faded"
-                classNames={{
-                  inputWrapper: "bg-white/5 border border-white/10 text-white",
-                }}
-              />
-              <ValidationError error={loginErrors.password?.message} />
-            </div>
-
-            <div className="flex items-end justify-between w-full">
-              <AppButton
-                type="submit"
-                disabled={!isValid}
-                isLoading={isSubmitting}
-              >
-                Login
-              </AppButton>
-            </div>
-          </Form>
-        )}
-
-        {showOTP && (
-          <Form
-            className="mt-6 flex flex-col gap-4"
-            onSubmit={handleOTPSubmit(onOTPSubmit)}
-          >
+        <Form
+          className="mt-6 flex flex-col gap-4"
+          onSubmit={handleLoginSubmit(onLogin)}
+        >
+          <div className="w-full">
             <Input
-              {...otpRegister("otp")}
-              label="OTP"
+              {...loginRegister("email")}
+              label="Email"
               labelPlacement="outside"
-              placeholder="Enter 6-digit code"
+              placeholder="Enter your email"
+              type="email"
               variant="faded"
               classNames={{
                 inputWrapper: "bg-white/5 border border-white/10 text-white",
               }}
             />
-            <ValidationError error={otpErrors.otp?.message} />
+            <ValidationError error={loginErrors.email?.message} />
+          </div>
 
-            <Button
-              type="submit"
-              className="mt-4 bg-green-600/80 hover:bg-green-600 text-white"
+          <div className="w-full">
+            <Input
+              {...loginRegister("password")}
+              label="Password"
+              labelPlacement="outside"
+              placeholder="Enter your password"
+              type="password"
+              variant="faded"
+              classNames={{
+                inputWrapper: "bg-white/5 border border-white/10 text-white",
+              }}
+            />
+            <ValidationError error={loginErrors.password?.message} />
+          </div>
+          <div className="flex justify-end w-full">
+            <Link
+              className="text-sm text-sky-200 hover:underline"
+              to={"/forget-password"}
             >
-              Verify OTP
-            </Button>
-          </Form>
-        )}
+              Forget Password
+            </Link>
+          </div>
+          <div className="flex items-end justify-between w-full">
+            <AppButton
+              type="submit"
+              disabled={!isValid || loading}
+              isLoading={loading}
+            >
+              Login
+            </AppButton>
+          </div>
+        </Form>
       </div>
     </section>
   );

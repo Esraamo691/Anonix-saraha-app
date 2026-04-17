@@ -9,6 +9,10 @@ import Profile from "../Pages/Profile/Profile";
 import Dashboard from "../Pages/Dashboard/Dashboard";
 import ProtectedRoutes from "./ProtectedRoutes";
 import ProtectedAuthRoutes from "./ProtectedAuthRoutes";
+import Account from "../Pages/Account/Account";
+import ForgetPassword from "../Pages/Auth/ForgetPassword/ForgetPassword";
+import ResetPassword from "../Pages/Auth/ResetPassword/ResetPassword";
+import ConfirmEmail from "../Pages/Auth/ConfirmEmail";
 
 export const router = createBrowserRouter([
   {
@@ -24,10 +28,18 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/profile",
+        path: "/user/:id",
         element: (
           <ProtectedRoutes>
             <Profile />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "/profile",
+        element: (
+          <ProtectedRoutes>
+            <Account />
           </ProtectedRoutes>
         ),
       },
@@ -38,6 +50,18 @@ export const router = createBrowserRouter([
             <Dashboard />
           </ProtectedRoutes>
         ),
+      },
+      {
+        path: "forget-password",
+        element: <ForgetPassword />,
+      },
+      {
+        path: "reset-password",
+        element: <ResetPassword />,
+      },
+      {
+        path: "/confirm-email",
+        element: <ConfirmEmail />,
       },
       {
         path: "/login",

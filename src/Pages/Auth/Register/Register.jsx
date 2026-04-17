@@ -1,98 +1,163 @@
-import React, { useState } from "react";
+// import React, { useState } from "react";
+// import { Alert, Button, Form, Input } from "@heroui/react";
+// import { Select, SelectItem } from "@heroui/react";
+// import { useForm, Controller } from "react-hook-form";
+// import axios from "axios";
+// import { useNavigate } from "react-router-dom";
+// import * as z from "zod";
+// import { zodResolver } from "@hookform/resolvers/zod";
+// import ValidationError from "../../../Components/Shared/ValidationError/ValidationError";
+// import AppButton from "../../../Components/Shared/AppButton/AppButton";
+// // import GoogleSignUp from "../GoogleSignUp/GoogleSignUp";
+// import { API_BASE_URL } from "../../../services/api";
+import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { registerServices } from "../../../services/AuthServices";
+import ValidationError from "../../../Components/Shared/ValidationError/ValidationError";
 import { Alert, Button, Form, Input } from "@heroui/react";
 import { Select, SelectItem } from "@heroui/react";
-import { useForm, Controller } from "react-hook-form";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import ValidationError from "../../../Components/Shared/ValidationError/ValidationError";
 import AppButton from "../../../Components/Shared/AppButton/AppButton";
-// import GoogleSignUp from "../GoogleSignUp/GoogleSignUp";
-import { API_BASE_URL } from "../../../services/api";
+// const defaultValues = {
+//   firstName: "",
+//   lastName: "",
+//   email: "",
+//   password: "",
+//   gender: "",
+//   phone: "",
+// };
 const defaultValues = {
-  firstName: "",
-  lastName: "",
+  userName: "",
   email: "",
   password: "",
+  confirmPassword: "",
   gender: "",
   phone: "",
 };
-const schema = z.object({
-  firstName: z
-    .string({ message: "FirstName is required" })
-    .min(3, { message: "FirstName must be at least 3 charcters long" }),
-  lastName: z
-    .string({ message: "LastName is required" })
-    .min(3, { message: "LastName must be at least 3 charcters long" }),
-  email: z.email("Invalid Email Address"),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 charcters long" })
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#])[A-Za-z\d@$!%*?&^#]{8,}$/,
-      {
-        message:
-          "Password must contain at least one Uppercase letter, one LowerCase letter, one number and one special character",
-      },
-    ),
-  phone: z.string().regex(/^(?:\\+20|0020|0)?1[0125][0-9]{8}$/, {
-    message: "Please enter a valid Egyptian phone number",
-  }),
-  gender: z.literal(["female", "male"], {
-    message: "Please select a gender",
-  }),
-});
+// const schema = z.object({
+//   firstName: z
+//     .string()
+//     .min(3, { message: "FirstName must be at least 3 characters long" }),
 
+//   lastName: z
+//     .string()
+//     .min(3, { message: "LastName must be at least 3 characters long" }),
+
+//   email: z.string().email("Invalid Email Address"),
+
+//   password: z
+//     .string()
+//     .min(8, { message: "Password must be at least 8 characters long" })
+//     .regex(
+//       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#])[A-Za-z\d@$!%*?&^#]{8,}$/,
+//       {
+//         message:
+//           "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character",
+//       },
+//     ),
+
+//   phone: z.string().regex(/^(?:\+20|0020|0)?1[0125][0-9]{8}$/, {
+//     message: "Please enter a valid Egyptian phone number",
+//   }),
+
+//   gender: z.enum(["male", "female"], {
+//     message: "Please select a gender",
+//   }),
+// });
+const schema = z
+  .object({
+    userName: z.string().min(3),
+
+    email: z.string().email(),
+
+    password: z
+      .string()
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,25}$/,
+        "Password does not match backend requirements",
+      ),
+
+    confirmPassword: z.string(),
+
+    phone: z.string(),
+
+    gender: z.enum(["0", "1"]),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 export default function Register() {
   const navigate = useNavigate();
   const [ApiError, setApiError] = useState(null);
+
   const {
     register,
     handleSubmit,
     control,
     formState: { errors, isSubmitting, isValid },
-  } = useForm({ defaultValues, resolver: zodResolver(schema) });
+  } = useForm({
+    defaultValues,
+    resolver: zodResolver(schema),
+    mode: "onChange",
+  });
 
-  async function onSubmit(data) {
-    console.log("Submitting data:", data);
+  // const onSubmit = async (data) => {
+  //   try {
+  //     setApiError(null);
+
+  //     const response = await registerServices(data);
+
+  //     if (
+  //       response?.message ===
+  //       "User Created Successfully, Please Check Your Email"
+  //     ) {
+  //       navigate("/confirm-email", {
+  //         state: {
+  //           email: data.email,
+  //           password: data.password,
+  //         },
+  //       });
+  //     } else {
+  //       setApiError(response?.error || "Registration failed");
+  //     }
+  //   } catch (error) {
+  //     setApiError(error.response?.data?.error || "Something went wrong");
+  //   }
+  // };
+  const onSubmit = async (data) => {
     try {
-      // const response = await axios.post(
-      //   "http://sarahne.eu-4.evennode.com/auth/register",
-      //   data,
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       accept: "*/*",
-      //     },
-      //   },
-      // );
-      // const response = await axios.post("/api/auth/register", data, {
-      //   headers: { "Content-Type": "application/json", accept: "*/*" },
-      // });
-      const response = await axios.post(`${API_BASE_URL}/auth/register`, data, {
-        headers: { "Content-Type": "application/json", accept: "*/*" },
-      });
-      console.log("API Response:", response.data);
+      setApiError(null);
 
-      if (
-        response.data.message ===
-        "User Created Successfully, Please Check Your Email"
-      ) {
-        navigate("/login");
-        setApiError(null);
-      } else if (response.data.error) {
-        throw new Error(response.data.error);
+      const payload = {
+        userName: data.userName,
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        phone: data.phone,
+        gender: Number(data.gender),
+      };
+
+      const response = await registerServices(payload);
+
+      if (response?.status === 201) {
+        navigate("/confirm-email", {
+          state: {
+            email: data.email,
+            password: data.password,
+          },
+        });
+      } else {
+        setApiError(response?.error_message || "Registration failed");
       }
     } catch (error) {
-      console.error(
-        "Registration error:",
-        error.response?.data || error.message,
+      setApiError(
+        error?.response?.data?.error_message || "Something went wrong",
       );
-      setApiError(error.response?.data?.error || error.message);
     }
-  }
-
+  };
   return (
     <section className="relative bg-[#070a10] py-10 min-h-screen flex justify-center items-center overflow-hidden">
       <div
@@ -125,7 +190,7 @@ export default function Register() {
           onSubmit={handleSubmit(onSubmit)}
         >
           {/* First Name */}
-          <div className="w-full">
+          {/* <div className="w-full">
             <Input
               {...register("firstName")}
               label="FirstName"
@@ -137,10 +202,10 @@ export default function Register() {
               }}
             />
             <ValidationError error={errors.firstName?.message} />
-          </div>
+          </div> */}
 
           {/* Last Name */}
-          <div className="w-full">
+          {/* <div className="w-full">
             <Input
               {...register("lastName")}
               label="LastName"
@@ -152,6 +217,22 @@ export default function Register() {
               }}
             />
             <ValidationError error={errors.lastName?.message} />
+          </div> */}
+
+          {/* username */}
+
+          <div className="w-full">
+            <Input
+              {...register("userName")}
+              label="User Name"
+              labelPlacement="outside"
+              placeholder="Enter username"
+              variant="faded"
+              classNames={{
+                inputWrapper: "bg-white/5 border border-white/10 text-white",
+              }}
+            />
+            <ValidationError error={errors.userName?.message} />
           </div>
 
           {/* Email */}
@@ -185,6 +266,21 @@ export default function Register() {
             />
             <ValidationError error={errors.password?.message} />
           </div>
+          {/* confirm */}
+          <div className="w-full">
+            <Input
+              {...register("confirmPassword")}
+              label="confirmPassword"
+              labelPlacement="outside"
+              placeholder="Please confirm the password"
+              type="password"
+              variant="faded"
+              classNames={{
+                inputWrapper: "bg-white/5 border border-white/10 text-white",
+              }}
+            />
+            <ValidationError error={errors.confirmPassword?.message} />
+          </div>
 
           {/* Gender using Controller */}
           <div className="w-full">
@@ -204,8 +300,8 @@ export default function Register() {
                   }}
                   variant="faded"
                 >
-                  <SelectItem key="female">Female</SelectItem>
-                  <SelectItem key="male">Male</SelectItem>
+                  <SelectItem key="0">Male</SelectItem>
+                  <SelectItem key="1">Female</SelectItem>
                 </Select>
               )}
             />
@@ -235,7 +331,6 @@ export default function Register() {
             >
               Register
             </AppButton>
-            <p className="bg-blue-50 text-sky-600 p-1 rounded-full">OR</p>
             {/* <GoogleSignUp /> */}
           </div>
         </Form>
