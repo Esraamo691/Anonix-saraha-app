@@ -2,29 +2,32 @@ import { useEffect, useState } from "react";
 import { MessageActions } from "../../Components/Messages/MessageActions";
 import { SendMessageForm } from "../../Components/Messages/SendMessageForm";
 import { MessageList } from "../../Components/Messages/MessageList";
+import { getCurrentUser } from "../../services/profileServices";
 import {
   deleteMessage,
   getAllMessages,
+  getFavourites,
   sendMessage,
+  toggleFavourite,
 } from "../../services/messageServices";
 import MessageStats from "../../Components/messages/MessageStats";
 import { Snippet } from "@heroui/react";
-
+import { Tabs, Tab } from "@heroui/react";
 const Dashboard = () => {
-  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const userId = "69df9b1a39b56acccd85d047";
-  const profileUrl = `${window.location.origin}/user/${userId}`;
-  // GET messages
+  const [userId, setUserId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const favourites = messages.filter((m) => m.isFavourite);
+  const [activeTab, setActiveTab] = useState("all");
+  const profileUrl = userId ? `${window.location.origin}/user/${userId}` : "";
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        const user = await getCurrentUser();
+        setUserId(user?.id);
 
         const data = await getAllMessages();
-
-        // 🔥 IMPORTANT SAFE HANDLING
         setMessages(data?.message || []);
       } catch (err) {
         console.log("FETCH ERROR:", err);
@@ -36,27 +39,73 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  // SEND message
-  const handleSend = async (text) => {
+  const handleToggleFav = async (messageId) => {
+    try {
+      await toggleFavourite(messageId);
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId
+            ? { ...msg, isFavourite: !msg.isFavourite }
+            : msg,
+        ),
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const handleToggleRead = (messageId) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === messageId ? { ...msg, isRead: !msg.isRead } : msg,
+      ),
+    );
+  };
+  // const handleSend = async (text) => {
+  //   if (!userId) {
+  //     console.log("NO USER ID ");
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await sendMessage(userId, { message: text });
+
+  //     const newMessage = res.data?.result?.message;
+
+  //     if (!newMessage) return;
+
+  //     setMessages((prev) => [newMessage, ...prev]);
+  //   } catch (err) {
+  //     console.log("SEND ERROR:", err);
+  //   }
+  // };
+  // stats
+  const handleSend = async (text, isAnonymous, senderName) => {
+    if (!userId) return;
     try {
       const res = await sendMessage(userId, { message: text });
-
-      const newMessage = res.data?.result?.message;
-
+      let newMessage = res.data?.result?.message;
       if (!newMessage) return;
 
-      // optimistic update
+      newMessage = {
+        ...newMessage,
+        isAnonymous,
+        displayName: isAnonymous
+          ? null
+          : senderName ||
+            `${newMessage.senderId?.firstName} ${newMessage.senderId?.lastName}`.trim(),
+      };
+
       setMessages((prev) => [newMessage, ...prev]);
     } catch (err) {
       console.log("SEND ERROR:", err);
     }
   };
 
-  // stats
   const stats = {
     totalMessages: messages.length,
     unreadMessages: messages.filter((m) => !m.isRead).length,
-    likedMessages: messages.filter((m) => m.isLike).length,
+    likedMessages: messages.filter((m) => m.isFavourite).length,
     thisWeekMessages: messages.filter((m) => {
       const diff = (new Date() - new Date(m.createdAt)) / (1000 * 60 * 60 * 24);
       return diff <= 7;
@@ -73,6 +122,7 @@ const Dashboard = () => {
       console.log("DELETE ERROR:", err);
     }
   };
+
   return (
     <div className="min-h-screen  bg-[#070a10] p-10">
       <div className="absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgb(0,27,136)_0%,transparent_70%)] blur-2xl pointer-events-none" />
@@ -87,7 +137,9 @@ const Dashboard = () => {
         </div> */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white">Your Messages</h1>
+            <h1 className="text-3xl mb-3 font-bold text-white">
+              Your Messages
+            </h1>
             <p className="text-gray-400 text-sm">
               Manage anonymous feedback in real time
             </p>
@@ -106,8 +158,16 @@ const Dashboard = () => {
             </Snippet>
           </div>
         </div>
-        <MessageActions {...stats} />
 
+        <Tabs
+          selectedKey={activeTab}
+          onSelectionChange={setActiveTab}
+          color="primary"
+          variant="bordered"
+        >
+          <Tab key="all" title="All Messages" />
+          <Tab key="fav" title="Favourites" />
+        </Tabs>
         {/* <SendMessageForm onSend={handleSend} />
 
         {loading ? (
@@ -119,11 +179,26 @@ const Dashboard = () => {
           {/* LEFT */}
           <div className="lg:col-span-2 space-y-6">
             <SendMessageForm onSend={handleSend} />
-            <MessageList messages={messages} onDelete={handleDelete} />
+            {/* <MessageList messages={messages} onDelete={handleDelete} /> */}
+            {activeTab === "all" ? (
+              <MessageList
+                messages={messages}
+                onDelete={handleDelete}
+                onToggleFav={handleToggleFav}
+                onToggleRead={handleToggleRead}
+              />
+            ) : (
+              <MessageList
+                messages={favourites}
+                onDelete={handleDelete}
+                onToggleFav={handleToggleFav}
+                onToggleRead={handleToggleRead}
+              />
+            )}
           </div>
 
           {/* RIGHT SIDEBAR */}
-          <div className="space-y-6">
+          <div className="space-y-6 ">
             <MessageStats {...stats} />
             {/* <ShareableLink /> */}
           </div>

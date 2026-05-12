@@ -105,8 +105,8 @@ import { sendMessage } from "../../services/messageServices";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
-export default function AnonymousMessageForm() {
-  const { id } = useParams();
+export default function AnonymousMessageForm({ userName, userId }) {
+  // const { id } = useParams();
 
   const [message, setMessage] = useState("");
   const [senderName, setSenderName] = useState("");
@@ -116,13 +116,18 @@ export default function AnonymousMessageForm() {
   const remainingChars = 500 - message.length;
 
   const handleSubmit = async () => {
-    if (!message.trim() || !id) return;
+    if (!message.trim() || !userId) return;
 
     try {
       setLoading(true);
 
-      await sendMessage(id, {
+      // await sendMessage(id, {
+      //   message,
+      // });
+      await sendMessage(userId, {
         message,
+        isAnonymous,
+        senderName: !isAnonymous ? senderName : undefined,
       });
       // reset
       setMessage("");
@@ -147,7 +152,7 @@ export default function AnonymousMessageForm() {
         </div>
 
         <h2 className="text-2xl font-bold text-white">
-          Send a message to <span className="text-blue-500">{id}</span>
+          Send a message to <span className="text-blue-500">{userName}</span>
         </h2>
 
         <p className="text-sm text-gray-400 mt-1">

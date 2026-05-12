@@ -20,6 +20,8 @@ import ValidationError from "../../../Components/Shared/ValidationError/Validati
 import { Alert, Button, Form, Input } from "@heroui/react";
 import { Select, SelectItem } from "@heroui/react";
 import AppButton from "../../../Components/Shared/AppButton/AppButton";
+import { useGoogleLogin } from "@react-oauth/google";
+import { googleLogin } from "../../../services/AuthServices";
 // const defaultValues = {
 //   firstName: "",
 //   lastName: "",
@@ -28,6 +30,7 @@ import AppButton from "../../../Components/Shared/AppButton/AppButton";
 //   gender: "",
 //   phone: "",
 // };
+
 const defaultValues = {
   userName: "",
   email: "",
@@ -92,6 +95,7 @@ const schema = z
 export default function Register() {
   const navigate = useNavigate();
   const [ApiError, setApiError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -158,6 +162,26 @@ export default function Register() {
       );
     }
   };
+  const handleGoogleLogin = useGoogleLogin({
+    flow: "auth-code",
+    onSuccess: async (tokenResponse) => {
+      try {
+        setLoading(true);
+        const response = await googleLogin(tokenResponse.code);
+        const tokenFromServer = response?.result?.access_token;
+        if (tokenFromServer) {
+          setToken(tokenFromServer);
+          navigate("/dashboard");
+        }
+      } catch (error) {
+        setApiError(error.response?.data?.error || "Google login failed");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => setApiError("Google login failed"),
+  });
+
   return (
     <section className="relative bg-[#070a10] py-10 min-h-screen flex justify-center items-center overflow-hidden">
       <div
@@ -334,7 +358,40 @@ export default function Register() {
             {/* <GoogleSignUp /> */}
           </div>
         </Form>
+        {/* Divider */}
+        <div className="flex items-center gap-3 my-2">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="text-xs text-gray-500">or</span>
+          <div className="flex-1 h-px bg-white/10" />
+        </div>
 
+        {/* Google Button */}
+        <button
+          type="button"
+          onClick={() => handleGoogleLogin()}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-200 py-2.5 px-4 text-sm text-white font-medium"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path
+              fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+            />
+          </svg>
+          Continue with Google
+        </button>
         <p className="mt-4 text-center text-xs text-gray-500">
           By creating an account, you can receive anonymous messages, manage
           users, and interact with comments freely.

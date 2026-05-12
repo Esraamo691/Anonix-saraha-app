@@ -1,40 +1,52 @@
 import { Button } from "@heroui/react";
-// import { Heart, Trash2, Eye, EyeOff } from "react-icons";
-import { BiHeart } from "react-icons/bi";
-import { BsEye, BsTrash2 } from "react-icons/bs";
-import { FiEyeOff } from "react-icons/fi";
+import { BiHeart, BiSolidHeart } from "react-icons/bi";
+import { BsTrash2 } from "react-icons/bs";
+import { FiEyeOff, FiEye } from "react-icons/fi";
 
 export const MessageActions = ({
+  message,
   onDelete,
-  onLike,
-  onToggleVisible,
-  isVisible,
+  onToggleFav,
+  onToggleRead,
 }) => {
+  const isFav = message.isFavourite;
+  const isRead = message.isRead;
+
   return (
-    <div className="flex gap-2 mt-2">
+    <div className="flex flex-col gap-2 mt-2">
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
-        onClick={onLike}
+        onClick={() => onToggleFav(message._id)}
         className="flex items-center gap-1"
       >
-        <BiHeart /> Like
+        {isFav ? (
+          <BiSolidHeart className="text-pink-500 text-xl" />
+        ) : (
+          <BiHeart className="text-gray-400 text-xl" />
+        )}
       </Button>
+
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
-        onClick={onDelete}
+        onClick={() => onToggleRead(message._id)}
         className="flex items-center gap-1"
       >
-        <BsTrash2 /> Delete
+        {isRead ? (
+          <FiEye className="text-green-400" />
+        ) : (
+          <FiEyeOff className="text-gray-400" />
+        )}
       </Button>
+
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
-        onClick={onToggleVisible}
-        className="flex items-center gap-1"
+        onClick={() => onDelete(message._id)}
+        className="text-red-500"
       >
-        {isVisible ? <FiEyeOff /> : <BsEye />} {isVisible ? "Hide" : "Show"}
+        <BsTrash2 />
       </Button>
     </div>
   );

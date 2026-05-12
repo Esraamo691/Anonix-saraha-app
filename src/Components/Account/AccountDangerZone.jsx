@@ -1,47 +1,79 @@
+// import { Card, Button, Input, Spinner } from "@heroui/react";
+// import axios from "axios";
+// import { useState } from "react";
+// import { FaTrashAlt, FaExclamationTriangle } from "react-icons/fa";
+// import { useMutation } from "@tanstack/react-query";
+// import { toast } from "react-toastify";
+// import { useNavigate } from "react-router-dom";
+
+// export default function AccountDangerZone() {
+//   return (
+//     <Card className="relative overflow-hidden bg-red-500/5 backdrop-blur-xl border border-red-500/20 rounded-2xl p-6 shadow-[0_0_45px_rgba(255,0,0,0.2)]">
+//       <div className="absolute -top-24 right-0 w-72 h-72 bg-red-600/30 rounded-full blur-3xl" />
+
+//       <div className="relative space-y-5">
+//         <div className="flex items-center gap-2 text-red-500">
+//           <FaExclamationTriangle />
+//           <h2 className="text-lg font-semibold">Danger Zone</h2>
+//         </div>
+
+//         <p className="text-sm text-gray-400">
+//           This action is irreversible. Please type the phrase below to confirm.
+//         </p>
+
+//         <Input
+//           value={confirmText}
+//           onChange={(e) => setConfirmText(e.target.value)}
+//           placeholder="delete my account"
+//         />
+
+//         <Button color="danger">
+//           {isPending ? <Spinner size="sm" /> : <FaTrashAlt />}
+//           Delete Account
+//         </Button>
+//       </div>
+//     </Card>
+//   );
+// }
 import { Card, Button, Input, Spinner } from "@heroui/react";
-import axios from "axios";
 import { useState } from "react";
 import { FaTrashAlt, FaExclamationTriangle } from "react-icons/fa";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { freezeAccount } from "../../services/profileServices";
 
 export default function AccountDangerZone() {
   const [confirmText, setConfirmText] = useState("");
   const navigate = useNavigate();
 
+  // logout function
   const logout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
     navigate("/login", { replace: true });
   };
 
-  const { mutate: confirmDelete, isPending } = useMutation({
-    mutationFn: deleteAccount,
+  // mutation
+  const { mutate, isPending } = useMutation({
+    mutationFn: freezeAccount,
     onSuccess: () => {
-      toast.success("Account Freezed successfully", { theme: "dark" });
+      toast.success("Account frozen successfully ❄️");
       logout();
     },
     onError: (error) => {
       const message = error?.response?.data?.error;
 
       if (message === "Account Freezed") {
-        toast.info("Your account is already frozen", { theme: "dark" });
+        toast.info("Account already frozen");
         logout();
         return;
       }
 
-      toast.error("Something went wrong", { theme: "dark" });
+      toast.error("Something went wrong");
     },
   });
-
-  async function deleteAccount() {
-    return axios.delete("http://sarahne.eu-4.evennode.com/user/freez-account", {
-      headers: {
-        accept: "*/*",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-  }
 
   return (
     <Card className="relative overflow-hidden bg-red-500/5 backdrop-blur-xl border border-red-500/20 rounded-2xl p-6 shadow-[0_0_45px_rgba(255,0,0,0.2)]">
@@ -54,22 +86,23 @@ export default function AccountDangerZone() {
         </div>
 
         <p className="text-sm text-gray-400">
-          This action is irreversible. Please type the phrase below to confirm.
+          This action will freeze your account. Type the phrase below to
+          confirm.
         </p>
 
         <Input
           value={confirmText}
           onChange={(e) => setConfirmText(e.target.value)}
-          placeholder="delete my account"
+          placeholder="freeze my account"
         />
 
         <Button
           color="danger"
-          onClick={confirmDelete}
-          isDisabled={confirmText !== "delete my account" || isPending}
+          onClick={() => mutate()}
+          isDisabled={confirmText !== "freeze my account" || isPending}
         >
           {isPending ? <Spinner size="sm" /> : <FaTrashAlt />}
-          Delete Account
+          Freeze Account
         </Button>
       </div>
     </Card>

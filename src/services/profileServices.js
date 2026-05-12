@@ -49,3 +49,14 @@ export const changePassword = async (data) => {
   const response = await api.patch("/user/password", data);
   return response.data;
 };
+
+export const freezeAccount = async () => {
+  const response = await api.patch("/user/freeze");
+  return response.data;
+};
+
+export const updateProfile = async (data) => {
+  const response = await api.patch("/user/edit-profile", data);
+
+  return response.data?.result;
+};

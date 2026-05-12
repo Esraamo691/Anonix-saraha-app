@@ -1,12 +1,18 @@
 import api from "../lib/api";
 
 // send anonymous message
+// export const sendMessage = async (userId, data) => {
+//   return api.post(`/message/${userId}`, {
+//     content: data.message,
+//   });
+// };
+// messageServices.js
+// messageServices.js
 export const sendMessage = async (userId, data) => {
   return api.post(`/message/${userId}`, {
     content: data.message,
   });
 };
-
 // get messages for user (inbox)
 export const getUserMessages = async (userId) => {
   const res = await api.get(`/message/${userId}`);
@@ -22,4 +28,15 @@ export const getAllMessages = async () => {
 // delete message
 export const deleteMessage = async (messageId) => {
   return api.delete(`/message/${messageId}`);
+};
+
+//toggle fav
+export const toggleFavourite = async (messageId) => {
+  return api.patch(`/message/favourite/${messageId}`);
+};
+
+//get all fav
+export const getFavourites = async () => {
+  const res = await api.get(`/message/favourites`);
+  return res.data?.result;
 };

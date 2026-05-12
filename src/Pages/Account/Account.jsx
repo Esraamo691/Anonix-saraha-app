@@ -1,11 +1,11 @@
 import { Card, Input, Textarea, Button, Avatar, Form } from "@heroui/react";
-import { FaUserEdit, FaLink } from "react-icons/fa";
+import { FaUserEdit, FaLink, FaUserAstronaut } from "react-icons/fa";
 import ProfileImageUpload from "../../Components/Account/ProfileImageUpload";
 import ChangePassword from "../../Components/Account/ChangePassword";
 import AccountDangerZone from "../../Components/Account/AccountDangerZone";
 import LogoImg from "../../assets/images/download.jpg";
 import { useEffect, useState } from "react";
-import { getCurrentUser } from "../../services/profileServices";
+import { getCurrentUser, updateProfile } from "../../services/profileServices";
 import { Snippet } from "@heroui/react";
 import { updateProfilePicture } from "../../services/profileServices";
 import { baseURL } from "../../consts";
@@ -13,6 +13,12 @@ export default function Account() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    bio: "",
+  });
+
   // const handleImageUpload = async (file) => {
   //   if (!file) return;
 
@@ -53,13 +59,11 @@ export default function Account() {
   //     setUploading(false);
   //   }
   // };
-
   const handleImageUpload = async (file) => {
     if (!file) return;
 
     try {
       setUploading(true);
-
       await updateProfilePicture(file);
 
       const data = await getCurrentUser();
@@ -70,20 +74,7 @@ export default function Account() {
       setUploading(false);
     }
   };
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     try {
-  //       const data = await getCurrentUser();
-  //       setUser(data);
-  //     } catch (err) {
-  //       console.log("Error fetching user:", err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
 
-  //   fetchUser();
-  // }, []);
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -101,6 +92,29 @@ export default function Account() {
 
     fetchUser();
   }, []);
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const updatedUser = await updateProfile(formData);
+
+      setUser(updatedUser);
+      setFormData({
+        firstName: "",
+        lastName: "",
+        bio: "",
+      });
+      console.log("UPDATED USER:", updatedUser);
+    } catch (err) {
+      console.log("UPDATE ERROR:", err);
+    }
+  };
   return (
     <div className="min-h-screen px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-8">
@@ -137,12 +151,36 @@ export default function Account() {
                   }
                   className="w-20 h-20 mx-auto"
                 />
+
                 <div>
                   <h2 className="text-lg font-semibold text-white">
                     {user ? `${user.firstName} ${user.lastName}` : "Loading..."}
                   </h2>
+                  <p className="text-gray-400 ">{user?.email}</p>
+                  {/* Bio Section */}
+                  <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 mt-4">
+                    {/* glow */}
+                    <div className="absolute inset-0 bg-linear-to-br from-blue-500/10 via-cyan-400/5 to-transparent" />
 
-                  <p className="text-gray-400">{user?.email}</p>
+                    {/* top icon */}
+                    <div className="relative flex items-center gap-2 ">
+                      <div className="w-8 h-8 rounded-xl bg-blue-500/20 flex items-center justify-center border border-blue-400/20">
+                        <FaUserAstronaut className="text-blue-400 text-sm" />
+                      </div>
+
+                      <h3 className="text-sm font-semibold text-white text-shadow-2xs text-shadow-sky-400 tracking-wide">
+                        About Me
+                      </h3>
+                    </div>
+
+                    {/* bio text */}
+                    <p className="relative text-sm mt-1 text-gray-300">
+                      {user?.bio || "No bio added yet..."}
+                    </p>
+
+                    {/* decorative blur */}
+                    <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-blue-500/20 blur-3xl" />
+                  </div>
                 </div>
                 <div className="flex justify-center gap-3 text-sm text-gray-400">
                   {user?.confirm && (
@@ -200,26 +238,43 @@ export default function Account() {
                 </div>
                 {/* <ProfileImageUpload /> */}
                 <ProfileImageUpload
-                  currentImage={user?.avatar || LogoImg}
-                  disabled={uploading}
+                  currentImage={
+                    user?.profilePicture
+                      ? `${baseURL}/${user.profilePicture}`
+                      : LogoImg
+                  }
                   onChange={(file) => handleImageUpload(file)}
+                  disabled={uploading}
                 />
-                <Form className="space-y-4">
+                <Form className="space-y-4" onSubmit={handleSubmit}>
                   <div className="grid md:grid-cols-2 gap-4 w-full">
                     <Input
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
                       label="First Name"
                       variant="bordered"
                       labelPlacement="outside"
                       placeholder="Enter your firstName"
                     />
                     <Input
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
                       label="Last Name"
                       variant="bordered"
                       labelPlacement="outside"
                       placeholder="Enter your lastName"
                     />
                   </div>
-                  <Textarea label="Bio" minRows={3} variant="bordered" />
+                  <Textarea
+                    name="bio"
+                    value={formData.bio}
+                    onChange={handleChange}
+                    label="Bio"
+                    minRows={3}
+                    variant="bordered"
+                  />
                   <Button type="submit" color="primary">
                     Save Changes
                   </Button>
