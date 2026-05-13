@@ -30,21 +30,19 @@ export const getSharedProfile = async (userId) => {
   return response.data?.result;
 };
 
-//upload image
 export const updateProfilePicture = async (file) => {
   const formData = new FormData();
+
   formData.append("attachment", file);
 
   const response = await api.patch("/user/profile-picture", formData, {
     headers: {
-      "Content-Type": "multipart/form-data",
       Authorization: `Bearer ${localStorage.getItem("access_token")}`,
     },
   });
 
   return response.data?.result;
 };
-
 export const changePassword = async (data) => {
   const response = await api.patch("/user/password", data);
   return response.data;

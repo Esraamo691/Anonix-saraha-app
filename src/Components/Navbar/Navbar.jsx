@@ -20,7 +20,8 @@ export default function App() {
   const { token, setToken } = useContext(AuthContext);
   const navigate = useNavigate();
   function handleLogout() {
-    localStorage.removeItem("token");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     setToken(null);
     navigate("/login");
   }

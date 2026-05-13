@@ -66,49 +66,26 @@ export const resetPassword = async (data) => {
   return response.data;
 };
 
-// export const googleLogin = async (credential) => {
-//   const response = await api.post("/auth/google-login", { credential });
-
-//   const result = response.data?.result;
-//   if (result?.access_token) {
-//     localStorage.setItem("access_token", result.access_token);
-//     localStorage.setItem("refresh_token", result.refresh_token);
-//   }
-
-//   return response.data;
-// };
-// export const googleLogin = async (credential) => {
-//   const response = await api.post("/auth/login/gmail", {
-//     access_token: credential, // غيرنا credential لـ access_token
-//   });
-//   const result = response.data?.result;
-//   if (result?.access_token) {
-//     localStorage.setItem("access_token", result.access_token);
-//     localStorage.setItem("refresh_token", result.refresh_token);
-//   }
-//   return response.data;
-// };
-// export const googleLogin = async (idToken) => {
-//   const response = await api.post("/auth/login/gmail", {
-//     idToken,
-//   });
-
-//   const result = response.data?.result?.account;
-
-//   if (result?.access_token) {
-//     localStorage.setItem("access_token", result.access_token);
-//     localStorage.setItem("refresh_token", result.refresh_token);
-//   }
-
-//   return response.data;
-// };
-// AuthServices.js - googleLogin
 export const googleLogin = async (idToken) => {
   const response = await api.post("/auth/login/gmail", {
     idToken,
   });
 
-  // ✅ صح - بتوصل للـ access_token
+  const result = response.data?.result?.account;
+
+  if (result?.access_token) {
+    localStorage.setItem("access_token", result.access_token);
+    localStorage.setItem("refresh_token", result.refresh_token);
+  }
+
+  return response.data;
+};
+
+export const googleSignup = async (idToken) => {
+  const response = await api.post("/auth/signup/gmail", {
+    idToken,
+  });
+
   const result = response.data?.result?.account;
 
   if (result?.access_token) {

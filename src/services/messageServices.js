@@ -1,13 +1,5 @@
 import api from "../lib/api";
 
-// send anonymous message
-// export const sendMessage = async (userId, data) => {
-//   return api.post(`/message/${userId}`, {
-//     content: data.message,
-//   });
-// };
-// messageServices.js
-// messageServices.js
 export const sendMessage = async (userId, data) => {
   return api.post(`/message/${userId}`, {
     content: data.message,

@@ -61,24 +61,7 @@ const Dashboard = () => {
       ),
     );
   };
-  // const handleSend = async (text) => {
-  //   if (!userId) {
-  //     console.log("NO USER ID ");
-  //     return;
-  //   }
 
-  //   try {
-  //     const res = await sendMessage(userId, { message: text });
-
-  //     const newMessage = res.data?.result?.message;
-
-  //     if (!newMessage) return;
-
-  //     setMessages((prev) => [newMessage, ...prev]);
-  //   } catch (err) {
-  //     console.log("SEND ERROR:", err);
-  //   }
-  // };
   // stats
   const handleSend = async (text, isAnonymous, senderName) => {
     if (!userId) return;
@@ -129,12 +112,6 @@ const Dashboard = () => {
       <div className="absolute right-1/4 bottom-1/4 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgb(0,27,136)_0%,transparent_70%)] blur-3xl pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto space-y-8">
-        {/* <div className="text-center text-white mb-6">
-          <h1 className="text-4xl font-bold">ANONIX Dashboard</h1>
-          <p className="text-gray-300 mt-1">
-            Manage your messages anonymously with style.
-          </p>
-        </div> */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl mb-3 font-bold text-white">

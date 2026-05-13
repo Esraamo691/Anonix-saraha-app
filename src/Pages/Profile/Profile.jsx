@@ -34,7 +34,7 @@ const Profile = () => {
           {/* Header */}
           <div className="flex flex-col items-center text-center space-y-3">
             {/* Avatar */}
-            <div className="w-20 h-20 rounded-full bg-linear-to-br from-blue-600 to-indigo-900 flex items-center justify-center text-white text-xl font-semibold shadow-md">
+            <div className="w-20 h-20 rounded-full border-4  border-sky-500 flex items-center justify-center text-white text-xl font-semibold shadow-md">
               {user?.firstName?.[0] || "U"}
               {user?.lastName?.[0] || ""}
             </div>

@@ -6,12 +6,13 @@ export default function AuthContextProvider({ children }) {
   console.log(token);
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      setToken(localStorage.getItem("token"));
+    if (localStorage.getItem("access_token")) {
+      setToken(localStorage.getItem("access_token"));
     }
   }, []);
   const logout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     setToken(null);
   };
 
